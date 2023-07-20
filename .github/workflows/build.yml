@@ -1,7 +1,7 @@
 name: Build Lambda
 on: [pull_request]
 jobs:
-  deploy_source:
+  build-source:
     name: Build
     strategy:
       matrix:
@@ -27,3 +27,9 @@ jobs:
         uses: montudor/action-zip@v1.0.0
         with:
           args: zip -qq -r ./bundle.zip ./
+      - name: Archive Bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle
+          path: bundle.zip
+          retention-days: 5
