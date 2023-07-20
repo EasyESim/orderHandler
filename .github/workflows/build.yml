@@ -1,8 +1,8 @@
 name: deploy to lambda
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   deploy_source:
-    name: build and deploy lambda
+    name: Build
     strategy:
       matrix:
         python-version: [3.10.12]
