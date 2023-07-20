@@ -29,8 +29,8 @@ jobs:
           name: bundle
           retention-days: 1
           path: |
-            !.gitignore
+            !./.gitignore
             !.git
             !.github
             !.vscode
-            !requirements.txt
+            !./requirements.txt
