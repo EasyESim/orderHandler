@@ -1,8 +1,5 @@
 name: deploy to lambda
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 jobs:
   deploy_source:
     name: build and deploy lambda
@@ -30,17 +27,3 @@ jobs:
         uses: montudor/action-zip@v1.0.0
         with:
           args: zip -qq -r ./bundle.zip ./
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
-      - name: Deploy
-        if: github.ref == 'refs/heads/main'
-        uses: appleboy/lambda-action@v0.1.9
-        with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: "eu-west-2"
-          function_name: newOrderHandler
-          zip_file: bundle.zip
-          layers: arn:aws:lambda:eu-west-2:819524876098:layer:python-layer:2
-          description: ${{steps.tag.outputs.tag}}
