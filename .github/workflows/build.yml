@@ -23,12 +23,13 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         env:
           CI: true
+      - name: Bundle
+        uses: montudor/action-zip@v1.0.0
+        with:
+          args: zip -qq -r ./bundle.zip ./
       - name: Archive Bundle
         uses: actions/upload-artifact@v3
         with:
           name: bundle
+          path: bundle.zip
           retention-days: 1
-          path: |
-            !.git
-            !.github
-            !.vscode
