@@ -88,14 +88,14 @@ class EmailClient:
 
                     if response.status == 202:
                         # print(f"Email sent successfully with status code: {response.status}")
-                        logger.info(f"Error email sent successfully with status code: {response.status}")
+                        logger.info(f"QR code email sent successfully with status code: {response.status}")
                     else:
                         # print(f"Email sending failed with status code: {response.status}")
-                        logger.error(f"Error email sending failed with status code: {response.status}")
+                        logger.error(f"QR code email sending failed with status code: {response.status}")
 
                 except ParamValidationError as e:
                     # print(f"Skipping invalid image data: {str(e)}")
-                    logger.error(f"Error sending error email: {str(e)}")
+                    logger.error(f"Error sending QR code email: {str(e)}")
 
         except Exception as e:
             print(f"Error sending email: {str(e)}")
@@ -103,6 +103,8 @@ class EmailClient:
         
     def send_email_on_failure(self, subject, body):
         try:
+            # Create an instance of urllib3 PoolManager
+            http = urllib3.PoolManager()
             email_data = {
                 "personalizations": [
                     {
@@ -124,7 +126,7 @@ class EmailClient:
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json"
             }
-            response = self.http.request(
+            response = http.request(
                 'POST',
                 'https://api.sendgrid.com/v3/mail/send',
                 body=encoded_data,

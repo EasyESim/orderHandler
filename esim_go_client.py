@@ -79,7 +79,7 @@ class EsimGoClient:
                 logger.error("Attempt %d: Failed to get eSIM details: %s", attempt + 1, str(e))
                 if attempt < 2:
                     logger.info("Retrying...")
-                    time.sleep(5)  # Add a delay before retrying (adjust as needed)
+                    time.sleep(10)  # Add a delay before retrying (adjust as needed)
                 else:
                     raise
 
