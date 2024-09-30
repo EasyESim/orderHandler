@@ -113,8 +113,17 @@ def lambda_handler(event, context):
     if qr_codes:
         email_client.send_email_with_qr_code(raw_payload['contact_email'], qr_codes, esim_details, raw_payload['order_number'])
         dynamo_client.update_order_status(order.id, "email_sent")
+        
+        #Update eSIM details
+        update_success = esim_client.update_esim(esim_details, raw_payload['order_number'])
+        
+        if not update_success:
+            logger.error("Failed to update eSIM details: %s", str(esim_details))
+            dynamo_client.update_order_status(order.id, "email_sent_and_update_esim_ref_failed")
+            email_client.send_email_on_failure("Failed to update eSIM Reference after email sent", str(esim_details))
+        else:
+            logger.info("eSIM details updated successfully")
+            
     else:
         logger.warning('QR code data not found in DynamoDB')
         dynamo_client.update_order_status(order.id, "qrcode_data_not_found")
-    
-    esim_client.update_esim(esim_details, raw_payload['order_number'])

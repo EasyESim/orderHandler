@@ -47,7 +47,8 @@ class EsimGoClient:
                 if r.status == 503:
                     logger.info("Received 503 status code. Adding delay before retrying...")
                     time.sleep(5)  # Add a delay of 5 seconds (adjust as needed)
-                    
+                    continue
+                
                 return response_text
             except Exception as e:
                 logger.error("Attempt %d: Failed to create new order: %s", attempt + 1, str(e))
@@ -56,6 +57,9 @@ class EsimGoClient:
                     time.sleep(5)  # Add a delay before retrying (adjust as needed)
                 else:
                     raise
+        # If we exhausted all retries and still failed, return the last response or error
+        print("All retry attempts failed")
+        return None
 
     def get_esim_details(self, order_reference):
         url = "https://api.esim-go.com/v2.3/esims/assignments?reference=" + order_reference
@@ -82,6 +86,9 @@ class EsimGoClient:
                     time.sleep(10)  # Add a delay before retrying (adjust as needed)
                 else:
                     raise
+        # If we exhausted all retries and still failed, return the last response or error
+        print("All retry attempts failed")
+        return None
 
     def get_esim_qrcode(self, order_reference):
         url = "https://api.esim-go.com/v2.3/esims/assignments?reference=" + order_reference
@@ -125,7 +132,8 @@ class EsimGoClient:
                     time.sleep(5)
                 else:
                     raise
-
+                
+        print("All retry attempts failed")
         return None
 
     def update_esim(self, esim_details, customer_ref):
@@ -143,7 +151,7 @@ class EsimGoClient:
                 'Content-Type': 'application/json'
             }
 
-            for attempt in range(3):
+            for attempt in range(3):  # Retry up to 3 times
                 try:
                     response = http.request(
                         'PUT',
@@ -152,16 +160,29 @@ class EsimGoClient:
                         headers=headers
                     )
                     response_text = response.data.decode('utf-8')
+                    
                     if response.status == 503:
                         print("Received 503 status code. Adding delay before retrying...")
-                        time.sleep(5)  # Add a delay of 5 seconds (adjust as needed)
+                        time.sleep(5)  # Delay before retrying
                         continue
-                    print("Update eSIM response:", response_text)
-                    break  # Exit the retry loop if successful
+                    
+                    # Check if the status code is exactly 200 (indicating success)
+                    if response.status == 200:
+                        print("Update eSIM response:", response_text)
+                        break  # Exit retry loop if successful
+                    
                 except Exception as e:
                     print(f"Attempt {attempt + 1}: Failed to update eSIM: {str(e)}")
                     if attempt < 2:
                         print("Retrying...")
-                        time.sleep(5)  # Add a delay before retrying (adjust as needed)
+                        time.sleep(5)  # Delay before retrying
                     else:
-                        raise
+                        print("Failed to update eSIM after multiple attempts.")
+                        return False  # Return failure if all attempts fail
+
+            # If we completed the loop without breaking, return False
+            else:
+                print(f"Failed to update eSIM for ICCID {iccid} after 3 attempts")
+                return False
+
+        return True  # Return True if all updates were successful
