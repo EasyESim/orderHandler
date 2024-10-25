@@ -21,6 +21,7 @@ class EmailClient:
         try:
             # Create an instance of urllib3 PoolManager
             http = urllib3.PoolManager()
+            all_success = True  # Track if all emails were successfully sent
             
             # Iterate through the list of image data dictionaries
             for index, image_data in enumerate(qr_code_binary):
@@ -101,17 +102,18 @@ class EmailClient:
                     if response.status == 202:
                         # print(f"Email sent successfully with status code: {response.status}")
                         logger.info(f"QR code email sent successfully with status code: {response.status}")
-                        return True
                     else:
                         # print(f"Email sending failed with status code: {response.status}")
                         logger.error(f"QR code email sending failed with status code: {response.status}")
-                        return False
+                        all_success = False  # Mark as failed if any email fails
 
                 except ParamValidationError as e:
                     # print(f"Skipping invalid image data: {str(e)}")
                     logger.error(f"Error sending QR code email: {str(e)}")
-                    return False
+                    all_success = False  # Mark as failed if any error occurs
 
+            return all_success  # Return True only if all emails were sent successfully
+        
         except Exception as e:
             print(f"Error sending email: {str(e)}")
             return False
